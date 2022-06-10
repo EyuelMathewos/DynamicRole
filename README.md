@@ -4,8 +4,8 @@
 
    
 ## User Model
-    GET USER [http://localhost:3000/users] <br/>
-    POST USER [http://localhost:3000/users] <br/>
-    POST USER [http://localhost:3000/users/login] <br/>
+    GET USER [http://localhost:3000/users]
+    POST USER [http://localhost:3000/users]
+    POST USER [http://localhost:3000/users/login]
     
 
