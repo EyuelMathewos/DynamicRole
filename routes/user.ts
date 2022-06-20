@@ -112,12 +112,12 @@ router.route("/login")
               exp: Math.floor(Date.now() / 1000) + (60 * 60),
             }
             console.log(data)
-            const accessTokens = await maindb.create("accessTokens", data).catch((error: any) => {
+            const accesstokens = await maindb.create("accesstokens", data).catch((error: any) => {
               console.log(error)
             })
 
-            console.log("accessTokens :");
-            console.log(accessTokens);
+            console.log("accesstokens :");
+            console.log(accesstokens);
 
             let encrypt = jwt.sign(
               data,
@@ -125,7 +125,7 @@ router.route("/login")
             );
 
             res.json({
-              id: accessTokens.id,
+              id: accesstokens.id,
               clientId: users[0].id,
               token: encrypt
             });

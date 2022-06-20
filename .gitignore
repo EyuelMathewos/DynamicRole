@@ -9,8 +9,7 @@
 # production
 /build
 
-#migrations
-/migrations
+
 
 # misc
 .env

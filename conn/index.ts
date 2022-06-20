@@ -5,7 +5,7 @@ const knex = require('knex')({
         port: 5432,
         user: 'postgres',
         password: 'postgres',
-        database: 'eyuel',
+        database: 'dynamicrole',
     }
 
 });
@@ -29,7 +29,7 @@ module.exports = {
             try {
 
                 const res = knex('users').select('*')
-                .fullOuterJoin("accessTokens",{ 'accessTokens.clientId' : 'users.id'})
+                .fullOuterJoin("accesstokens",{ 'accesstokens.clientId' : 'users.id'})
 
                 resolve(res);
             } catch (error) {
