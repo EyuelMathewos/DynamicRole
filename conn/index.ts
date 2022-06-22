@@ -11,12 +11,14 @@ const knex = require('knex')({
 });
 
 
+
+
 module.exports = {
-    filtter: function (collection: string, value: any) {
+    filtter: function (collection: string, key:any ,value: any) {
         return new Promise(async function (resolve, reject) {
             try {
                 // knex('users').select('first_name').where('age','>', '18')
-                const res = await knex(collection).select("*").where(value);
+                const res = await knex(collection).select("*").where(key,value);
                 resolve(res);
             } catch (error) {
                 reject(error);
@@ -24,40 +26,34 @@ module.exports = {
         });
     },
 
-    filtterunion: function (collection: string, value: any) {
+    filtterunion: function ( currentTableName: string, currentIdName:string, key:any ,value: any, joinTableName: string, joinTableIdName: string ) {
         return new Promise(async  (resolve, reject) => {
             try {
-
-                const res = knex('users').select('*')
-                .fullOuterJoin("accesstokens",{ 'accesstokens.clientId' : 'users.id'})
+                let joinValue : string = `${joinTableName}.${joinTableIdName}` 
+                let currentValue : string = `${currentTableName}.${currentIdName}`
+                const res = knex.select('*')
+                .from(currentTableName).where(key, value)
+                .fullOuterJoin(joinTableName, currentValue ,joinValue)
 
                 resolve(res);
             } catch (error) {
-                console.log(error)
                 reject(error);
             }
         });
     },
-
 
     create: function (collection: string, value: any) {
 
         return new Promise(async function (resolve, reject) {
             try {
-                const res = await knex(collection).insert(value).returning('id').then(function (data: any) {
-                    // use id here
-                    console.log("id");
-                    console.log(data[0].id);
-                    value.id = data[0].id;
-                    resolve(value);
-                });
-                //resolve(res);
+                const res = await knex(collection).insert(value);
+                resolve(value);
             } catch (error) {
                 reject(error);
             }
         });
     },
-    getAll: async function (collection: object) {
+    getAll: async function (collection: string) {
         return new Promise(async function (resolve, reject) {
             try {
                 const res = await knex.select('*').from(collection);

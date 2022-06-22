@@ -1,14 +1,18 @@
 import express, { Request, Response, NextFunction } from "express";
 import jwt from 'jsonwebtoken';
-var indexRoute = require("./routes/index");
-var usersRoute = require("./routes/user");
-var rolesRoute = require("./routes/roles")
-var maindb = require('./conn/index');
-var defineAbilitiesFor = require('./accesscontrol/accesscontrol')
+const indexRoute = require("./routes/index");
+const usersRoute = require("./routes/user");
+const rolesRoute = require("./routes/roles");
+const accesslistRoute = require("./routes/accesslist");
+const permissionRoute = require("./routes/permissions");
+const articlesRoute = require("./routes/articles");
+const missingRoute = require('./routes/missingroute')
+const defineAbilitiesFor = require('./accesscontrol/accesscontrol');
+const { getUserRoles, getAnonymousAblity } = require("./service/auth")
+const port = 3000;
 
 
-
-var app = express();
+const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({
@@ -26,31 +30,21 @@ async function myLogger(req: CustomRequest, res: Response, next: NextFunction) {
     const bearer = bearerHeader.split(' ');
     const bearerToken = bearer[1];
 
-    var decoded: any = jwt.decode(bearerToken);
+    const decoded: any = jwt.decode(bearerToken);
     res.setHeader("token", bearerToken);
-    //console.log(decoded);
 
-    let value = await maindb.filtter("roles", {
-      id: decoded.roleId
-    })
-    if (value[0]?.permissions != null) {
-      console.log(value[0].permissions);
-      const userAbility = defineAbilitiesFor(value[0].permissions);
+    const usersPermissions = await getUserRoles(decoded.clientId);
+    if (usersPermissions != null) {
+      const userAbility = defineAbilitiesFor(usersPermissions);
       req.ability = userAbility;
     }
-
-  } else {
+  } 
+  else {
     //ANONYMOUS_ABILITY
-    let reqvalue = await maindb.filtter("roles", {
-      id: 3
-    })
-    console.log("req value")
-    console.log(reqvalue);
-    const userAbility = defineAbilitiesFor(reqvalue[0].permissions);
+    const usersPermissions = await getAnonymousAblity();
+    const userAbility = defineAbilitiesFor(usersPermissions);
     req.ability = userAbility;
-
   }
-
   next()
 }
 
@@ -60,7 +54,11 @@ app.use(myLogger)
 app.use("/", indexRoute);
 app.use("/users", usersRoute);
 app.use("/roles", rolesRoute);
+app.use("/accesslist", accesslistRoute);
+app.use("/permissions", permissionRoute);
+app.use("/articles", articlesRoute);
+app.use('*', missingRoute);
 
-app.listen(3000, () => {
-  console.log(`app listening on port 3000`)
+app.listen(port, () => {
+  console.log(`app listening on port ${port}`)
 })

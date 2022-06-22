@@ -8,7 +8,6 @@ export async function up(knex: Knex): Promise<void> {
       .createTable('roles', (table) => {
         table.increments('id');
         table.string('name', 255).notNullable();
-        table.json('permissions').notNullable();
       })
   
       .createTable('users', (table) => {
@@ -45,10 +44,3 @@ export async function up(knex: Knex): Promise<void> {
       .dropTable('roles')
       .dropTable('accesstokens');
   };
-  
-  // {   Accesstoken
-  //   id: 'r3AoJv9yFu87oCzIqWPKd8m7Z3JrWLbU7pvvViUGbKPtoNY8f6rtKRwz6h96b_h8Q',
-  //   userId: 3,
-  //   roleId: 1,
-  //   iat: 1649189120
-  // }
