@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { ForbiddenError } from '@casl/ability';
+import { permittedFieldsOf } from '@casl/ability/extra';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 var router = express.Router();
@@ -13,13 +14,14 @@ interface CustomRequest extends Request {
 }
 
 
+const options = { fieldsFrom: (rule: { fields: any; }) => rule.fields || "*" };
 
 router.route("/")
   .get(async (req: CustomRequest, res: Response) => {
     try {
-      ForbiddenError.from(req.ability).throwUnlessCan('read', "User");
-      let value = await maindb.getAll("users")
-      console.log(value);
+      ForbiddenError.from(req.ability).throwUnlessCan('read', "users");
+      let fields = permittedFieldsOf(req.ability, 'read', "users" , options);
+      let value = await maindb.getAllSelected( "users", fields )
       res.json(value);
 
     } catch (error: any) {
