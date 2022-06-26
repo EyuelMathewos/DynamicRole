@@ -18,7 +18,7 @@ router.route("/")
       let value = await maindb.getAll("accesslist")
       res.json(value);
     } catch (error: any) {
-      if (error.name == "ForbiddenError") {
+      if ( error instanceof ForbiddenError ) {
         return res.status(403).send({
           status: 'forbidden',
           message: error.message
@@ -34,11 +34,11 @@ router.route("/")
         let valdationStatus: Boolean = response.status;
         if (valdationStatus) {
           try {
-            // ForbiddenError.from(req.ability).throwUnlessCan('create', "accesslist");
+            ForbiddenError.from(req.ability).throwUnlessCan('create', "accesslist");
             let value = await maindb.create("accesslist", req.body)
             res.json(req.body);
           } catch (error: any) {
-            if (error.name == "ForbiddenError") {
+            if ( error instanceof ForbiddenError ) {
               return res.status(403).send({
                 status: 'forbidden',
                 message: error.message
@@ -65,7 +65,7 @@ router.route("/:id")
       let value = await maindb.filtter("accesslist", 'id', id)
       res.json(value)
     } catch (error: any) {
-      if (error.name == "ForbiddenError") {
+      if ( error instanceof ForbiddenError ) {
         return res.status(403).send({
           status: 'forbidden',
           message: error.message
@@ -82,7 +82,7 @@ router.route("/:id")
         let valdationStatus: Boolean = response.status;
         if (valdationStatus) {
           try {
-            // ForbiddenError.from(req.ability).throwUnlessCan('update', "accesslist");
+            ForbiddenError.from(req.ability).throwUnlessCan('update', "accesslist");
             let value = await maindb.update("accesslist", 'id', id, req.body)
             res.json(req.body)
           } catch (error) {
@@ -103,7 +103,7 @@ router.route("/:id")
       let value = await maindb.delete("accesslist", 'id', id)
       res.send(`user deleted with user id: ${id}`);
     } catch (error: any) {
-      if (error.name == "ForbiddenError") {
+      if ( error instanceof ForbiddenError ) {
         return res.status(403).send({
           status: 'forbidden',
           message: error.message

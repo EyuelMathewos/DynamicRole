@@ -1,5 +1,7 @@
 import express, { Request, Response } from "express";
 import { ForbiddenError } from '@casl/ability';
+import { permittedFieldsOf } from '@casl/ability/extra';
+import { accessibleBy } from '@casl/prisma';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 const router = express.Router();
@@ -13,13 +15,14 @@ interface CustomRequest extends Request {
   ability ? : any
 }
 
-
+const options = { fieldsFrom: (rule: { fields: any; }) => rule.fields || "*" };
 
 router.route("/")
   .get(async (req: CustomRequest, res: Response) => {
     try {
       ForbiddenError.from(req.ability).throwUnlessCan('read', "users");
-      let value = await maindb.getAll("users")
+      let fields = permittedFieldsOf(req.ability, 'read', "users" , options);
+      let value = await maindb.getAllSelected( "users", fields )
       res.json(value);
 
     } catch (error: any) {
@@ -34,7 +37,7 @@ router.route("/")
 
   .post(async (req: CustomRequest, res: Response) => {
     try {
-      ForbiddenError.from(req.ability).throwUnlessCan('create', "users");
+      // ForbiddenError.from(req.ability).throwUnlessCan('create', "users");
       validator(req.body, createRule).then(async (response: any) => {
           let valdationStatus: Boolean = response.status;
           if (valdationStatus) {
@@ -44,7 +47,7 @@ router.route("/")
               let user = await maindb.create("users", req.body);
               res.json(user)
             } catch (error: any) {
-              if (error.name == "ForbiddenError") {
+              if ( error instanceof ForbiddenError ) {
                 return res.status(403).send({
                   status: 'forbidden',
                   message: error.message
@@ -90,7 +93,7 @@ router.route("/login")
             token: encrypt
           });
         } catch (error: any) {
-          if (error.name == "ForbiddenError") {
+          if ( error instanceof ForbiddenError ) {
             return res.status(403).send({
               status: 'forbidden',
               message: error.message
@@ -118,7 +121,7 @@ router.route("/:id/accesstokens")
       res.json(users);
 
     } catch (error: any) {
-      if (error.name == "ForbiddenError") {
+      if ( error instanceof ForbiddenError ) {
         return res.status(403).send({
           status: 'forbidden',
           message: error.message
@@ -138,7 +141,7 @@ router.route("/:id")
       let value = await maindb.filtter("users", 'id', id)
       res.json(value)
     } catch (error: any) {
-      if (error.name == "ForbiddenError") {
+      if ( error instanceof ForbiddenError ) {
         return res.status(403).send({
           status: 'forbidden',
           message: error.message
@@ -151,21 +154,40 @@ router.route("/:id")
 
   .put(async (req: CustomRequest, res: Response) => {
     const id = req.params.id;
+    
     validator(req.body, updateRule).then(async (response: any) => {
+        let data = req.body;
         let valdationStatus: Boolean = response.status;
-        if (valdationStatus) {
+
+        if ( valdationStatus ) {
           try {
             ForbiddenError.from(req.ability).throwUnlessCan('update', "users");
-            let value = await maindb.update("users", 'id', id, req.body)
-            res.json(req.body)
+            const accessibleby = accessibleBy(req.ability, 'update').users;
+            const conditions = accessibleby['OR'][0];
+                  if( conditions == null || conditions == {} || data == {}){
+                      throw({ message: "Can Not Update User Data Only Account Owner Can"});
+                  }
+            let value = await maindb.update( "users", 'id', id, req.body, conditions )
+            console.log(value);
+            if( value == 0 ){
+              res.status(412).json({
+                message: 'Can Not Update User Data Only Account Owner Can'
+              }) 
+            }else{
+              res.send({
+                result: "success",
+                message: `User Data Updated with a User Id: ${id}`
+              })
+            }
+            //res.json(req.body)
           } catch (error: any) {
-            if (error.name == "ForbiddenError") {
+            if ( error instanceof ForbiddenError ) {
               return res.status(403).send({
                 status: 'forbidden',
                 message: error.message
               });
             } else {
-              res.send(error);
+             res.send(error);
             }
           }
         }
@@ -183,7 +205,7 @@ router.route("/:id")
       let value = await maindb.delete("users", 'id', id)
       res.send(`user deleted with user id: ${id}`);
     } catch (error: any) {
-      if (error.name == "ForbiddenError") {
+      if ( error instanceof ForbiddenError ) {
         return res.status(403).send({
           status: 'forbidden',
           message: error.message

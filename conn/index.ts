@@ -9,10 +9,15 @@ const knex = require('knex')({
     }
 
 });
+// collection: string, id: string, value: object
+type Params = {
+    collection: String,
+    key?: String,
+    value? : object
+}
 
 
-
-
+//collection: string, key:any ,value: an
 module.exports = {
     filtter: function (collection: string, key:any ,value: any) {
         return new Promise(async function (resolve, reject) {
@@ -64,12 +69,25 @@ module.exports = {
             }
         });
     },
-    update: function (collection: string, id: string, value: string, data: object) {
+    getAllSelected: async function (collection: object, selectedFields: object) {
+        return new Promise(async function (resolve, reject) {
+            try {
+                const res = await knex.select( selectedFields ).from(collection);
+                resolve(res);
+
+            } catch (error) {
+                reject(error);
+            }
+        });
+    },
+    update: function (collection: string, id: string, value: string, data: object, condition: object = {}) {
         return new Promise(async function (resolve, reject) {
             try {
                 const res = await knex(collection).where({
                     [id]: value
-                }).update(data)
+                })
+                .andWhere(condition)
+                .update(data)
                 resolve(res);
             } catch (error) {
                 reject(error);

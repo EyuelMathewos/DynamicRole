@@ -18,7 +18,7 @@ router.route("/")
       let value = await maindb.getAll("permissions")
       res.json(value);
     } catch (error: any) {
-      if (error.name == "ForbiddenError") {
+      if ( error instanceof ForbiddenError ) {
         return res.status(403).send({
           status: 'forbidden',
           message: error.message
@@ -40,11 +40,11 @@ router.route("/")
         let valdationStatus: Boolean = response.status;
         if (valdationStatus) {
           try {
-            // ForbiddenError.from(req.ability).throwUnlessCan('create', "permissions");
+            ForbiddenError.from(req.ability).throwUnlessCan('create', "permissions");
             let value = await maindb.create("permissions", data)
             res.json(req.body);
           } catch (error: any) {
-            if (error.name == "ForbiddenError") {
+            if ( error instanceof ForbiddenError ) {
               return res.status(403).send({
                 status: 'forbidden',
                 message: error.message
@@ -89,7 +89,7 @@ router.route("/:id")
             let value = await maindb.update("permissions", 'id', id, req.body)
             res.json(req.body)
           } catch (error: any) {
-            if (error.name == "ForbiddenError") {
+            if ( error instanceof ForbiddenError ) {
               return res.status(403).send({
                 status: 'forbidden',
                 message: error.message
@@ -112,7 +112,7 @@ router.route("/:id")
       let value = await maindb.delete("permissions", 'id', id)
       res.send(`user deleted with user id: ${id}`);
     } catch (error: any) {
-      if (error.name == "ForbiddenError") {
+      if ( error instanceof ForbiddenError ) {
         return res.status(403).send({
           status: 'forbidden',
           message: error.message

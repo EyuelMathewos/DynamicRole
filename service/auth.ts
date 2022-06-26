@@ -31,7 +31,7 @@ export function getUserRoles  ( clientId : any ) {
 export function getAnonymousAblity  ( clientId : any ) {
   return new Promise(async  (resolve, reject) => {
       try{
-        let permissions = await maindb.filtterunion( "permissions", "accessId", "roleId", 4,  "accesslist", "id" )
+        let permissions = await maindb.filtterunion( "permissions", "accessId", "roleId", 3,  "accesslist", "id" )
         // console.log(permissions);
         resolve(permissions);
       }catch( error ){

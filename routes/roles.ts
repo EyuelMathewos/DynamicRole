@@ -14,11 +14,11 @@ interface CustomRequest extends Request {
 router.route("/")
   .get(async (req: CustomRequest, res: Response) => {
     try {
-      ForbiddenError.from(req.ability).throwUnlessCan('read', "articles");
-      let value = await maindb.getAll("articles")
+      ForbiddenError.from(req.ability).throwUnlessCan('read', "roles");
+      let value = await maindb.getAll("roles")
       res.json(value);
     } catch (error: any) {
-      if (error.name == "ForbiddenError") {
+      if ( error instanceof ForbiddenError ) {
         return res.status(403).send({
           status: 'forbidden',
           message: error.message
@@ -34,11 +34,11 @@ router.route("/")
       let valdationStatus: Boolean = response.status;
       if (valdationStatus) {
         try {
-          ForbiddenError.from(req.ability).throwUnlessCan('create', "articles");
-          let value = await maindb.create("articles", req.body)
+          ForbiddenError.from(req.ability).throwUnlessCan('create', "roles");
+          let value = await maindb.create("roles", req.body)
           res.json(req.body);
         } catch (error: any) {
-          if (error.name == "ForbiddenError") {
+          if ( error instanceof ForbiddenError ) {
             return res.status(403).send({
               status: 'forbidden',
               message: error.message
@@ -59,11 +59,11 @@ router.route("/:id")
   .get(async (req: CustomRequest, res: Response) => {
     const id = req.params.id;
     try {
-      ForbiddenError.from(req.ability).throwUnlessCan('read', "articles");
-      let value = await maindb.filtter("articles", 'id', id)
+      ForbiddenError.from(req.ability).throwUnlessCan('read', "roles");
+      let value = await maindb.filtter("roles", 'id', id)
       res.json(value);
     } catch (error: any) {
-      if (error.name == "ForbiddenError") {
+      if ( error instanceof ForbiddenError ) {
         return res.status(403).send({
           status: 'forbidden',
           message: error.message
@@ -80,11 +80,11 @@ router.route("/:id")
       let valdationStatus: Boolean = response.status;
       if (valdationStatus) {
           try {
-            ForbiddenError.from(req.ability).throwUnlessCan('update', "articles");
-            let value = await maindb.update("articles", 'id', id, req.body)
+            ForbiddenError.from(req.ability).throwUnlessCan('update', "roles");
+            let value = await maindb.update("roles", 'id', id, req.body)
             res.json(req.body)
           } catch (error: any) {
-            if (error.name == "ForbiddenError") {
+            if ( error instanceof ForbiddenError ) {
               return res.status(403).send({
                 status: 'forbidden',
                 message: error.message
@@ -100,11 +100,11 @@ router.route("/:id")
   .delete(async (req: CustomRequest, res: Response) => {
     const id = req.params.id;
     try {
-      ForbiddenError.from(req.ability).throwUnlessCan('delete', "articles");
-      let value = await maindb.delete("articles", 'id', id)
-      res.send(`article deleted with article id: ${id}`);
+      ForbiddenError.from(req.ability).throwUnlessCan('delete', "roles");
+      let value = await maindb.delete("roles", 'id', id)
+      res.send(`role deleted with role id: ${id}`);
     } catch (error: any) {
-      if (error.name == "ForbiddenError") {
+      if ( error instanceof ForbiddenError ) {
         return res.status(403).send({
           status: 'forbidden',
           message: error.message
